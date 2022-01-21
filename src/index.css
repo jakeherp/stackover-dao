@@ -4,7 +4,7 @@ body {
 	font-family: Inter, sans-serif;
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
-	background-color: #7700ee;
+	background-color: rgb(20 20 43);
 	color: #fff;
 	overflow-x: hidden;
 }
@@ -116,7 +116,12 @@ h1 {
 
 button {
 	cursor: pointer;
-	background-color: #000;
+	background: linear-gradient(
+		95.08deg,
+		#945bf1 2.49%,
+		#bb48bf 49%,
+		#f67e4d 97.19%
+	);
 	color: #fff;
 	border: none;
 	font-weight: bold;
