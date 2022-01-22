@@ -1,15 +1,16 @@
 import sdk from './1-initialize-sdk.js';
 
-const appModule = sdk.getAppModule(
-	'0xBaD0920F30DA5030f001bAF6F900118E63e54204'
-);
+import dotenv from 'dotenv';
+dotenv.config();
+
+const appModule = sdk.getAppModule(process.env.APP_MODULE_ADDRESS);
 
 const deployVote = async () => {
 	try {
 		const voteModule = await appModule.deployVoteModule({
 			// Give your governance contract a name.
 			name: "StackoverDAO's Proposals",
-			votingTokenAddress: '0x7eFd41324f4a3666E659c42190DA0C0F6820BC91',
+			votingTokenAddress: process.env.TOKEN_MODULE_ADDRESS,
 			// After a proposal is created, when can members start voting?
 			proposalStartWaitTimeInSeconds: 0,
 			// How long do members have to vote on a proposal when it's created?

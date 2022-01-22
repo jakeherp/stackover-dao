@@ -2,7 +2,10 @@ import { ethers } from 'ethers';
 import sdk from './1-initialize-sdk.js';
 import { readFileSync } from 'fs';
 
-const app = sdk.getAppModule('0xBaD0920F30DA5030f001bAF6F900118E63e54204');
+import dotenv from 'dotenv';
+dotenv.config();
+
+const app = sdk.getAppModule(process.env.APP_MODULE_ADDRESS);
 
 const deployDrop = async () => {
 	try {

@@ -1,7 +1,10 @@
 import sdk from './1-initialize-sdk.js';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const bundleDrop = sdk.getBundleDropModule(
-	'0x23c37536A17cCd6468b585Da35bE851e3458291A'
+	process.env.BUNDLE_DROP_MODULE_ADDRESS
 );
 
 const setClaimCondition = async () => {
