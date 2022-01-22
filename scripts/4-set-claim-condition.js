@@ -4,7 +4,7 @@ const bundleDrop = sdk.getBundleDropModule(
 	'0x23c37536A17cCd6468b585Da35bE851e3458291A'
 );
 
-(async () => {
+const setClaimCondition = async () => {
 	try {
 		const claimConditionFactory = bundleDrop.getClaimConditionFactory();
 		// Specify conditions.
@@ -22,4 +22,6 @@ const bundleDrop = sdk.getBundleDropModule(
 	} catch (error) {
 		console.error('Failed to set claim condition', error);
 	}
-})();
+};
+
+setClaimCondition();

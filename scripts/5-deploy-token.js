@@ -2,7 +2,7 @@ import sdk from './1-initialize-sdk.js';
 
 const app = sdk.getAppModule('0xBaD0920F30DA5030f001bAF6F900118E63e54204');
 
-(async () => {
+const deployToken = async () => {
 	try {
 		const tokenModule = await app.deployTokenModule({
 			name: 'StackoverDAO Governance Token',
@@ -15,4 +15,6 @@ const app = sdk.getAppModule('0xBaD0920F30DA5030f001bAF6F900118E63e54204');
 	} catch (error) {
 		console.error('failed to deploy token module', error);
 	}
-})();
+};
+
+deployToken();

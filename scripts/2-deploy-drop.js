@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 
 const app = sdk.getAppModule('0xBaD0920F30DA5030f001bAF6F900118E63e54204');
 
-(async () => {
+const deployDrop = async () => {
 	try {
 		const bundleDropModule = await app.deployBundleDropModule({
 			name: 'StackoverDAO Membership',
@@ -26,4 +26,6 @@ const app = sdk.getAppModule('0xBaD0920F30DA5030f001bAF6F900118E63e54204');
 	} catch (error) {
 		console.error('failed to deploy bundleDrop module', error);
 	}
-})();
+};
+
+deployDrop();
