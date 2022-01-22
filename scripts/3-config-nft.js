@@ -1,6 +1,9 @@
 import sdk from './1-initialize-sdk.js';
 import { readFileSync } from 'fs';
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 const bundleDrop = sdk.getBundleDropModule(
 	process.env.BUNDLE_DROP_MODULE_ADDRESS
 );
