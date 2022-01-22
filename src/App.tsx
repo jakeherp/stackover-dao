@@ -1,8 +1,16 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { ethers } from 'ethers';
+import { mapVotes } from './lib/mapVotes';
+import { mintNft } from './lib/mintNft';
+import { UnsupportedChainIdError } from '@web3-react/core';
+import { useMemberList } from './lib/useMemberList';
 import { useWeb3 } from '@3rdweb/hooks';
 import { Proposal, ThirdwebSDK } from '@3rdweb/sdk';
+
+import MemberList from './components/MemberList';
+import NetworkError from './components/NetworkError';
+import Proposals from './components/Proposals';
 
 const sdk = new ThirdwebSDK('rinkeby');
 
@@ -25,7 +33,7 @@ const App = () => {
 	const [isVoting, setIsVoting] = useState(false);
 	const [hasVoted, setHasVoted] = useState(false);
 
-	const { connectWallet, address, provider } = useWeb3();
+	const { connectWallet, address, provider, error } = useWeb3();
 
 	const signer = provider ? provider.getSigner() : undefined;
 
@@ -104,46 +112,14 @@ const App = () => {
 			});
 	}, [hasClaimedNft, proposals, address]);
 
-	const memberList = useMemo(() => {
-		return memberAddresses.map((address) => {
-			return {
-				address,
-				tokenAmount: ethers.utils.formatUnits(
-					// If the address isn't in memberTokenAmounts, it means they don't
-					// hold any of our toke
-					// @ts-expect-error // TODO: fix TS
-					memberTokenAmounts[address] || 0,
-					18
-				),
-			};
-		});
-	}, [memberAddresses, memberTokenAmounts]);
+	const memberList = useMemberList(memberAddresses, memberTokenAmounts);
 
 	const handleConnect = () => connectWallet('injected');
 
-	const mintNft = () => {
-		setIsClaiming(true);
-		bundleDropModule
-			.claim('0', 1)
-			.then(() => {
-				setHasClaimedNft(true);
-				console.log(
-					`🌊 Successfully Minted! Check it our on OpenSea: https://testnets.opensea.io/assets/${bundleDropModule.address.toLowerCase()}/0`
-				);
-			})
-			.catch((err) => {
-				console.error('failed to claim', err);
-			})
-			.finally(() => {
-				setIsClaiming(false);
-			});
-	};
+	const handleMinting = () =>
+		mintNft(setIsClaiming, setHasClaimedNft, bundleDropModule);
 
-	const shortenAddress = (str: string) => {
-		return str.substring(0, 6) + '...' + str.substring(str.length - 4);
-	};
-
-	const proposalHandler = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleProposal = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		e.stopPropagation();
 
@@ -151,25 +127,7 @@ const App = () => {
 		setIsVoting(true);
 
 		// lets get the votes from the form for the values
-		const votes = proposals.map((proposal) => {
-			const voteResult = {
-				proposalId: proposal.proposalId,
-				//abstain by default
-				vote: 2,
-			};
-			proposal.votes.forEach((vote) => {
-				const elem = document.getElementById(
-					proposal.proposalId + '-' + vote.type
-				);
-
-				// @ts-expect-error // TODO: fix TS
-				if (elem?.checked) {
-					voteResult.vote = vote.type;
-					return;
-				}
-			});
-			return voteResult;
-		});
+		const votes = mapVotes(proposals);
 
 		// first we need to make sure the user delegates their token to vote
 		try {
@@ -228,6 +186,10 @@ const App = () => {
 		}
 	};
 
+	if (error instanceof UnsupportedChainIdError) {
+		return <NetworkError />;
+	}
+
 	if (!address) {
 		return (
 			<div className="landing">
@@ -249,71 +211,23 @@ const App = () => {
 					<div>
 						<div>
 							<h2>Member List</h2>
-							<table className="card">
-								<thead>
-									<tr>
-										<th>Address</th>
-										<th>Token Amount</th>
-									</tr>
-								</thead>
-								<tbody>
-									{memberList.map((member) => {
-										return (
-											<tr key={member.address}>
-												<td>{shortenAddress(member.address)}</td>
-												<td>{member.tokenAmount}</td>
-											</tr>
-										);
-									})}
-								</tbody>
-							</table>
+							<MemberList memberList={memberList} />
 						</div>
 						<div>
 							<h2>Active Proposals</h2>
-							<form onSubmit={proposalHandler}>
-								{proposals.map((proposal) => (
-									<div key={proposal.proposalId} className="card">
-										<h5>{proposal.description}</h5>
-										<div>
-											{proposal.votes.map((vote) => (
-												<div key={vote.type}>
-													<input
-														type="radio"
-														id={proposal.proposalId + '-' + vote.type}
-														name={proposal.proposalId}
-														value={vote.type}
-														//default the "abstain" vote to checked
-														defaultChecked={vote.type === 2}
-													/>
-													<label
-														htmlFor={proposal.proposalId + '-' + vote.type}
-													>
-														{vote.label}
-													</label>
-												</div>
-											))}
-										</div>
-									</div>
-								))}
-								<button disabled={isVoting || hasVoted} type="submit">
-									{isVoting
-										? 'Voting...'
-										: hasVoted
-										? 'You Already Voted'
-										: 'Submit Votes'}
-								</button>
-								<small>
-									This will trigger multiple transactions that you will need to
-									sign.
-								</small>
-							</form>
+							<Proposals
+								handleProposal={handleProposal}
+								proposals={proposals}
+								isVoting={isVoting}
+								hasVoted={hasVoted}
+							/>
 						</div>
 					</div>
 				</div>
 			) : (
 				<div className="mint-nft">
 					<h2>Mint your free StackoverDAO Membership NFT</h2>
-					<button disabled={isClaiming} onClick={() => mintNft()}>
+					<button disabled={isClaiming} onClick={handleMinting}>
 						{isClaiming ? 'Minting...' : 'Mint your NFT for free'}
 					</button>
 				</div>
